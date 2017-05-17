@@ -26,12 +26,12 @@
 		}));
 
 		it('Should HomeCtrl must be defined', function () {
-			expect(controller).toBeDefined();
+			expect(controller).not.undefined;
 		});
 
 		it('Should match the path Module name', function () {
 			$location.path('/home');
-			expect($location.path()).toBe('/home');
+			expect($location.path()).to.equal('/home');
 		});
 
 	});
