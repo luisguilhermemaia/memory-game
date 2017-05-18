@@ -2,22 +2,10 @@
     <md-card class="text-center">
         <md-card-content>
             <h1>{{ vm.title }}</h1>
-            <h3>{{ vm.version }}</h3>
             <md-grid-list md-cols="4" md-row-height="4:3" style="height: 100px;">
-                    <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[0]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
-                        <img ng-src="{{image.urlVirada}}">
-                    </md-grid-tile>
-                      <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[1]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
-                           <md-grid-tile-footer><h3>{{image}} / {{image.row}}</h3></md-grid-tile-footer>
-                        <img ng-src="{{image.urlVirada}}" ng-click="vm.joga(image.col,image.row)">
-                    </md-grid-tile>
-                      <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[2]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
-                        <img ng-src="{{image.urlVirada}}">
-                    </md-grid-tile>
-                      <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[3]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
-                        <img ng-src="{{image.urlVirada}}">
-                    </md-grid-tile>
-
+                <md-grid-tile ng-repeat="carta in vm.grid" md-rowspan="carta.row" md-colspan="carta.col">
+                    <img ng-src="{{carta.urlVirada}}" ng-click="vm.joga(carta)" ng-if="!carta.apagada">
+                </md-grid-tile>
             </md-grid-list>
         </md-card-content>
     </md-card>

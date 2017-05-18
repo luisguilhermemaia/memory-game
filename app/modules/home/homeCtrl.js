@@ -13,9 +13,9 @@
 		.module('memory-game')
 		.controller('HomeCtrl', Home);
 
-	Home.$inject = ['homeService'];
+	Home.$inject = ['homeService', '$timeout'];
 
-	function Home(homeService, $scope) {
+	function Home(homeService, $timeout) {
 
 		var vm = this;
 		vm.title = "Hello, memory-game!";
@@ -25,6 +25,8 @@
 		vm.tabuleiro = new Tabuleiro();
 
 		vm.jogadaAtual = null;
+
+		vm.grid = [];
 
 		vm.cartas = [
 			new Carta('ball', '/app/assets/images/8-ball.png'),
@@ -50,36 +52,43 @@
 				for (var col = 0; col < vm.tabuleiro.qtdColunas; col++) {
 					var ramdom = Math.floor(Math.random() * vm.cartas.length);
 					var carta = vm.cartas[ramdom];
-					carta.setRow = row;
-					carta.setCol = col;
+					carta.setRow(row);
+					carta.setCol(col);
+					vm.grid.push(carta);
 					vm.tabuleiro.matriz[row][col] = carta;
 					vm.cartas.splice(ramdom, 1)[0];
 				}
 			}
-			console.log(vm.tabuleiro.matriz);
+			console.log(vm.grid);
 		};
 
-		vm.joga = function (x, y) {
+		vm.joga = function (carta) {
 			if (!vm.jogadaAtual) {
 				vm.jogadaAtual = new Jogada();
 			}
 
 			if (!vm.jogadaAtual.primeiraCarta) {
-				vm.jogadaAtual.primeiraCarta = vm.recuperaCarta(x, y);
+				vm.jogadaAtual.primeiraCarta = carta;
 				console.log(vm.jogadaAtual.primeiraCarta.nome + ' PRIMEIRA CARTA');
 				vm.jogadaAtual.primeiraCarta.desvira();
 				vm.jogadaAtual.iniciada = true;
 			} else if (!vm.jogadaAtual.segundaCarta) {
-				vm.jogadaAtual.segundaCarta = vm.recuperaCarta(x, y);
+				vm.jogadaAtual.segundaCarta = carta;
 				console.log(vm.jogadaAtual.segundaCarta.nome + ' SEGUNDA CARTA');
 				vm.jogadaAtual.segundaCarta.desvira();
 				vm.jogadaAtual.iniciada = false;
+				var index = vm.grid.indexOf(vm.jogadaAtual.primeiraCarta);
+				var index1 = vm.grid.indexOf(vm.jogadaAtual.segundaCarta);
 				if (vm.jogadaAtual.segundaCarta.nome == vm.jogadaAtual.primeiraCarta.nome) {
 					vm.jogadaAtual.bemSucedida = true;
-					vm.jogadaAtual.segundaCarta.apaga();
-					vm.jogadaAtual.primeiraCarta.apaga();
-					console.log("parabens!!")
+					vm.grid[index].apagada = true;
+					vm.grid[index1].apagada = true;
+					console.log("parabens!!");
+				} else {
+					$timeout(vm.grid[index].vira, 2000);
+					$timeout(vm.grid[index1].vira, 2000);
 				}
+
 				vm.jogadaAtual = new Jogada();
 			}
 
@@ -132,6 +141,11 @@
 			self.desvira = function () {
 				self.escondida = false;
 				self.urlVirada = self.imagem;
+			};
+
+			self.vira = function () {
+				self.escondida = true;
+				self.urlVirada = '/app/assets/images/back.png';
 			};
 
 			self.apaga = function () {

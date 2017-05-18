@@ -3,10 +3,6 @@ describe('dado um jogo da memória', function () {
     function Jogo() {
         var self = this;
 
-        self.tabuleiro = new Tabuleiro();
-
-        self.jogadaAtual = null;
-
         self.cartas = [
             new Carta('ball'),
             new Carta('ball'),
@@ -26,14 +22,12 @@ describe('dado um jogo da memória', function () {
             new Carta('zeppelin')
         ];
 
+        self.tabuleiro = new Tabuleiro(self.cartas);
+
+        self.jogadaAtual = null;
+
         self.inicia = function () {
-            for (var row = 0; row < self.tabuleiro.qtdLinhas; row++) {
-                for (var col = 0; col < self.tabuleiro.qtdColunas; col++) {
-                    var ramdom = Math.floor(Math.random() * self.cartas.length);
-                    self.tabuleiro.matriz[row][col] = self.cartas[ramdom];
-                    self.cartas.splice(ramdom, 1)[0];
-                }
-            }
+            self.tabuleiro.posicionaCartas();
         };
 
         self.joga = function (x, y) {
@@ -41,23 +35,35 @@ describe('dado um jogo da memória', function () {
                 self.jogadaAtual = new Jogada();
             }
 
+            if (self.jogadaAtual.segundaCarta && self.jogadaAtual.primeiraCarta) {
+                self.jogadaAtual = new Jogada();
+            }
+
             if (!self.jogadaAtual.primeiraCarta) {
                 self.jogadaAtual.primeiraCarta = self.recuperaCarta(x, y);
                 console.log(self.jogadaAtual.primeiraCarta.nome + ' PRIMEIRA CARTA');
+
                 self.jogadaAtual.primeiraCarta.desvira();
+
                 self.jogadaAtual.iniciada = true;
+
             } else if (!self.jogadaAtual.segundaCarta) {
                 self.jogadaAtual.segundaCarta = self.recuperaCarta(x, y);
-                console.log(self.jogadaAtual.segundaCarta.nome + ' SEGUNDA CARTA');
+
                 self.jogadaAtual.segundaCarta.desvira();
+
                 self.jogadaAtual.iniciada = false;
+
+                self.jogadaAtual.primeiraCarta.vira();
+
+                self.jogadaAtual.segundaCarta.vira();
+
                 if (self.jogadaAtual.segundaCarta.nome == self.jogadaAtual.primeiraCarta.nome) {
                     self.jogadaAtual.bemSucedida = true;
                     self.jogadaAtual.segundaCarta.apaga();
                     self.jogadaAtual.primeiraCarta.apaga();
-                    console.log("parabens!!")
                 }
-                self.jogadaAtual = new Jogada();
+
             }
 
         };
@@ -90,6 +96,8 @@ describe('dado um jogo da memória', function () {
         self.imagem = '';
         self.escondida = true;
         self.apagada = false;
+        self.linha = null;
+        self.coluna = null;
 
         self.toString = function () {
             return self.nome;
@@ -99,12 +107,13 @@ describe('dado um jogo da memória', function () {
             self.escondida = false;
         };
 
-        self.apaga = function () {
-            self.apagada = true;
+        self.vira = function () {
+            self.escondida = true;
         };
+
     }
 
-    function Tabuleiro() {
+    function Tabuleiro(cartas) {
         var self = this;
 
         self.qtdLinhas = 4;
@@ -114,8 +123,25 @@ describe('dado um jogo da memória', function () {
             [], [], [], []
         ];
 
+        self.posicionaCartas = function () {
+            for (var row = 0; row < self.qtdLinhas; row++) {
+                for (var col = 0; col < self.qtdColunas; col++) {
+                    var random = Math.floor(Math.random() * cartas.length);
+                    var carta = cartas[random];
+                    carta.linha = row;
+                    carta.coluna = col;
+                    self.matriz[row][col] = carta;
+                    cartas.splice(random, 1)[0];
+                };
+            };
+        };
+
         self.recuperaCarta = function (x, y) {
             return self.matriz[x][y];
+        };
+
+        self.apagaCarta = function (x, y) {
+            self.matriz[x][y] = null;
         };
     }
 
@@ -136,33 +162,6 @@ describe('dado um jogo da memória', function () {
 
     });
 
-    describe('quando iniciar o jogo', function () {
-        var jogo;
-
-        beforeEach(function () {
-            jogo = new Jogo();
-        });
-
-        it('distribui as cartas', function () {
-            expect(jogo.recuperaCarta(0, 0)).to.be.instanceOf(Carta);
-        });
-
-        describe('realizando uma nobre jogada', function () {
-
-            it('ao jogar uma vez a jogada foi iniciada', function () {
-                jogo.joga(0, 0);
-                console.log(jogo.recuperaJogadaAtual());
-                expect(jogo.recuperaJogadaAtual().iniciada).to.be.true;
-            });
-
-            it('ao jogar pela segunda vez a jogada foi finalizada', function () {
-                jogo.joga(0, 0);
-                jogo.joga(0, 1);
-                expect(jogo.recuperaJogadaAtual().iniciada).to.be.false;
-            });
-
-        });
-    });
 
     describe('uma Carta', function () {
         var carta;
@@ -225,4 +224,51 @@ describe('dado um jogo da memória', function () {
         });
     });
 
+    describe('quando iniciar o jogo', function () {
+        var jogo;
+
+        beforeEach(function () {
+            jogo = new Jogo();
+        });
+
+        it('distribui as cartas', function () {
+            expect(jogo.recuperaCarta(0, 0)).to.be.instanceOf(Carta);
+        });
+
+        describe('realizando uma nobre jogada', function () {
+
+            it('ao jogar uma vez a jogada foi iniciada', function () {
+                jogo.joga(0, 0);
+                expect(jogo.recuperaJogadaAtual().iniciada).to.be.true;
+            });
+
+            it('ao jogar pela segunda vez a jogada foi finalizada', function () {
+                jogo.joga(0, 0);
+                jogo.joga(0, 1);
+                expect(jogo.recuperaJogadaAtual().iniciada).to.be.false;
+            });
+
+            it('ao jogar pela segunda vez as duas cartas foram viradas', function () {
+                jogo.joga(0, 0);
+                jogo.joga(0, 1);
+                expect(jogo.recuperaJogadaAtual().iniciada).to.be.false;
+            });
+
+            it('ao jogar pela segunda vez ambas, se forem iguais ambas vão apagar senao ambas vão virar', function () {
+                jogo.joga(0, 0);
+                jogo.joga(0, 1);
+
+                if (jogo.recuperaJogadaAtual().primeiraCarta.nome == jogo.recuperaJogadaAtual().segundaCarta.nome) {
+                    expect(jogo.recuperaJogadaAtual().primeiraCarta.apagada).to.be.true;
+                    expect(jogo.recuperaJogadaAtual().segundaCarta.apagada).to.be.true;
+                } else {
+                    expect(jogo.recuperaJogadaAtual().primeiraCarta.escondida).to.be.true;
+                    expect(jogo.recuperaJogadaAtual().segundaCarta.escondida).to.be.true;
+                }
+
+            });
+
+
+        });
+    });
 });
