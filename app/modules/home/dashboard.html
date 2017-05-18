@@ -1,9 +1,24 @@
 <div class="md-padding" flex layout-sm="column">
-   
-    <md-grid-list md-cols="3" md-cols-sm="3" md-cols-md="3" md-cols-gt-md="3" md-row-height-gt-md="1:1" md-row-height="4:3" md-gutter="8px"
-        md-gutter-gt-sm="4px">
-        <md-grid-tile ng-repeat="image in vm.images" md-rowspan="{{image.rowspan}}" md-colspan="{{image.colspan}}" md-colspan-sm="1" md-colspan-xs="1">
-            <img ng-src="{{image.src}}">
-        </md-grid-tile>
-    </md-grid-list>
+    <md-card class="text-center">
+        <md-card-content>
+            <h1>{{ vm.title }}</h1>
+            <h3>{{ vm.version }}</h3>
+            <md-grid-list md-cols="4" md-row-height="4:3" style="height: 100px;">
+                    <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[0]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
+                        <img ng-src="{{image.urlVirada}}">
+                    </md-grid-tile>
+                      <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[1]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
+                           <md-grid-tile-footer><h3>{{image}} / {{image.row}}</h3></md-grid-tile-footer>
+                        <img ng-src="{{image.urlVirada}}" ng-click="vm.joga(image.col,image.row)">
+                    </md-grid-tile>
+                      <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[2]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
+                        <img ng-src="{{image.urlVirada}}">
+                    </md-grid-tile>
+                      <md-grid-tile ng-repeat="image in vm.tabuleiro.matriz[3]" md-rowspan="{{image.col}}" md-colspan="{{image.row}}">
+                        <img ng-src="{{image.urlVirada}}">
+                    </md-grid-tile>
+
+            </md-grid-list>
+        </md-card-content>
+    </md-card>
 </div>
