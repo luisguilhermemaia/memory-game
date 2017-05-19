@@ -41,7 +41,7 @@ describe('um Jogo da Memória', function () {
         });
 
         it('possui um estado', function () {
-            expect(carta).to.have.ownProperty('escondida');
+            expect(carta).to.have.ownProperty('virada');
         });
 
     });

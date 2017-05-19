@@ -5,6 +5,18 @@ function Jogo(tabuleiro) {
 
     self.jogadaAtual = null;
 
+    self.acabou = function () {
+        for (var row = 0; row < self.tabuleiro.matriz.length; row++) {
+            for (var col = 0; col < self.tabuleiro.matriz[row].length; col++) {
+                if (!self.tabuleiro.matriz[row][col].apagada) {
+                    return false;
+                };
+            };
+        };
+
+        return true;
+    };
+
     self.inicia = function () {
         self.tabuleiro.posicionaCartas();
     };
@@ -15,6 +27,8 @@ function Jogo(tabuleiro) {
         }
 
         if (self.jogadaAtual.segundaCarta && self.jogadaAtual.primeiraCarta) {
+            self.jogadaAtual.segundaCarta.vira();
+            self.jogadaAtual.primeiraCarta.vira();
             self.jogadaAtual = new Jogada();
         }
 
@@ -32,18 +46,14 @@ function Jogo(tabuleiro) {
 
             self.jogadaAtual.iniciada = false;
 
-            self.jogadaAtual.primeiraCarta.vira();
-
-            self.jogadaAtual.segundaCarta.vira();
-
-            if (self.jogadaAtual.segundaCarta.nome == self.jogadaAtual.primeiraCarta.nome) {
+            if (self.jogadaAtual.segundaCarta.nome === self.jogadaAtual.primeiraCarta.nome) {
                 self.jogadaAtual.bemSucedida = true;
                 self.jogadaAtual.segundaCarta.apaga();
                 self.jogadaAtual.primeiraCarta.apaga();
+            } else {
+                self.jogadaAtual.bemSucedida = false;
             }
-
         }
-
     };
 
     self.recuperaCarta = function (x, y) {
@@ -72,7 +82,7 @@ function Carta(nome, id) {
 
     self.nome = nome;
     self.imagem = '';
-    self.escondida = true;
+    self.virada = true;
     self.apagada = false;
     self.linha = null;
     self.coluna = null;
@@ -82,12 +92,16 @@ function Carta(nome, id) {
     };
 
     self.desvira = function () {
-        self.escondida = false;
+        self.virada = false;
     };
 
     self.vira = function () {
-        self.escondida = true;
+        self.virada = true;
     };
+
+    self.apaga = function () {
+        self.apagada = true;
+    }
 
 }
 
@@ -106,10 +120,6 @@ function Tabuleiro(cartas, posicionadorDeCartas) {
 
     self.recuperaCarta = function (x, y) {
         return self.matriz[x][y];
-    };
-
-    self.apagaCarta = function (x, y) {
-        self.matriz[x][y] = null;
     };
 }
 
