@@ -34,8 +34,8 @@ module.exports = function (config) {
 			'app/modules/home/homeRoute.js',
 			'app/modules/home/homeService.js',
 			'app/modules/home/home-test.js',
-			'/home/herakles-dev/workspaces/memory-game/node_modules/mocha/mocha.js'
-			//'tests/*.js'
+			'/home/herakles-dev/workspaces/memory-game/node_modules/mocha/mocha.js',
+			'tests/*.js'
 		],
 
 		// Test results reporter to use

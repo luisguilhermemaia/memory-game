@@ -1,10 +1,14 @@
 <div class="md-padding" flex layout-sm="column">
-    <h1>{{ vm.title }}</h1>
-
-    <div layout="row" flex="100" ng-repeat="linha in vm.jogo.tabuleiro.matriz">
-        <div layout="row" flex="{{100 / linha.length}}" flex ng-repeat="carta in linha" ng-style="{ visibility: carta.apagada ? 'hidden': 'visible' }">
-            <img ng-src="{{carta.url}}" ng-click="vm.jogo.joga(carta.linha, carta.coluna)" ng-if="!carta.virada">
-            <img ng-src="{{carta.urlVirada}}" ng-click="vm.jogo.joga(carta.linha, carta.coluna)" ng-if="carta.virada">
-        </div>
-    </div>
+    <md-card class="text-center">
+        <md-card-content>
+            <h1>{{vm.title}}</h1>
+            <div layout="row" flex="100" ng-repeat="linha in vm.jogo.tabuleiro.matriz">
+                <div layout="row" flex="{{100 / linha.length}}" flex ng-repeat="carta in linha" ng-style="{ visibility: carta.apagada ? 'hidden': 'visible' }">
+                    <img ng-src="{{carta.url}}" ng-click="vm.jogo.joga(carta.linha, carta.coluna)" ng-if="!carta.virada">
+                    <img ng-src="{{carta.urlVirada}}" ng-click="vm.jogo.joga(carta.linha, carta.coluna)" ng-if="carta.virada">
+                </div>
+                <div ng-if="jogo.acabou"><h1>Parabéns!</h1></div>
+            </div>
+        </md-card-content>
+    </md-card>
 </div>
