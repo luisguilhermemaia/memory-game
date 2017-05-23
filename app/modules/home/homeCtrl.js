@@ -16,93 +16,82 @@
 	Home.$inject = ['homeService', '$timeout'];
 
 	function Home(homeService, $timeout) {
-
 		var vm = this;
 		vm.title = "Hello, memory-game!";
 		vm.version = "1.0.0";
 		vm.listFeatures = homeService.getFeaturesList();
 
-		vm.tabuleiro = new Tabuleiro();
 
-		vm.jogadaAtual = null;
+		vm.jogo = new Jogo(new Tabuleiro(criaCartas(), new PosicionadorDeCartas()));
 
-		vm.grid = [];
+		function Jogo(tabuleiro) {
+			var self = this;
 
-		vm.cartas = [
-			new Carta('ball', '/app/assets/images/8-ball.png'),
-			new Carta('ball', '/app/assets/images/8-ball.png'),
-			new Carta('potato', '/app/assets/images/baked-potato.png'),
-			new Carta('potato', '/app/assets/images/baked-potato.png'),
-			new Carta('dinosaur', '/app/assets/images/dinosaur.png'),
-			new Carta('dinosaur', '/app/assets/images/dinosaur.png'),
-			new Carta('kronos', '/app/assets/images/kronos.png'),
-			new Carta('kronos', '/app/assets/images/kronos.png'),
-			new Carta('rocket', '/app/assets/images/rocket.png'),
-			new Carta('rocket', '/app/assets/images/rocket.png'),
-			new Carta('unicorn', '/app/assets/images/skinny-unicorn.png'),
-			new Carta('unicorn', '/app/assets/images/skinny-unicorn.png'),
-			new Carta('guy', '/app/assets/images/that-guy.png'),
-			new Carta('guy', '/app/assets/images/that-guy.png'),
-			new Carta('zeppelin', '/app/assets/images/zeppelin.png'),
-			new Carta('zeppelin', '/app/assets/images/zeppelin.png')
-		];
+			self.tabuleiro = tabuleiro;
 
-		vm.inicia = function () {
-			for (var row = 0; row < vm.tabuleiro.qtdLinhas; row++) {
-				for (var col = 0; col < vm.tabuleiro.qtdColunas; col++) {
-					var ramdom = Math.floor(Math.random() * vm.cartas.length);
-					var carta = vm.cartas[ramdom];
-					carta.setRow(row);
-					carta.setCol(col);
-					vm.grid.push(carta);
-					vm.tabuleiro.matriz[row][col] = carta;
-					vm.cartas.splice(ramdom, 1)[0];
-				}
-			}
-			console.log(vm.grid);
-		};
+			self.jogadaAtual = null;
 
-		vm.joga = function (carta) {
-			if (!vm.jogadaAtual) {
-				vm.jogadaAtual = new Jogada();
-			}
+			self.acabou = function () {
+				for (var row = 0; row < self.tabuleiro.matriz.length; row++) {
+					for (var col = 0; col < self.tabuleiro.matriz[row].length; col++) {
+						if (!self.tabuleiro.matriz[row][col].apagada) {
+							return false;
+						};
+					};
+				};
 
-			if (!vm.jogadaAtual.primeiraCarta) {
-				vm.jogadaAtual.primeiraCarta = carta;
-				console.log(vm.jogadaAtual.primeiraCarta.nome + ' PRIMEIRA CARTA');
-				vm.jogadaAtual.primeiraCarta.desvira();
-				vm.jogadaAtual.iniciada = true;
-			} else if (!vm.jogadaAtual.segundaCarta) {
-				vm.jogadaAtual.segundaCarta = carta;
-				console.log(vm.jogadaAtual.segundaCarta.nome + ' SEGUNDA CARTA');
-				vm.jogadaAtual.segundaCarta.desvira();
-				vm.jogadaAtual.iniciada = false;
-				var index = vm.grid.indexOf(vm.jogadaAtual.primeiraCarta);
-				var index1 = vm.grid.indexOf(vm.jogadaAtual.segundaCarta);
-				if (vm.jogadaAtual.segundaCarta.nome == vm.jogadaAtual.primeiraCarta.nome) {
-					vm.jogadaAtual.bemSucedida = true;
-					vm.grid[index].apagada = true;
-					vm.grid[index1].apagada = true;
-					console.log("parabens!!");
-				} else {
-					$timeout(vm.grid[index].vira, 2000);
-					$timeout(vm.grid[index1].vira, 2000);
+				return true;
+			};
+
+			self.inicia = function () {
+				self.tabuleiro.posicionaCartas();
+			};
+
+			self.joga = function (x, y) {
+				if (!self.jogadaAtual) {
+					self.jogadaAtual = new Jogada();
 				}
 
-				vm.jogadaAtual = new Jogada();
-			}
+				if (self.jogadaAtual.segundaCarta && self.jogadaAtual.primeiraCarta) {
+					self.jogadaAtual.segundaCarta.vira();
+					self.jogadaAtual.primeiraCarta.vira();
+					self.jogadaAtual = new Jogada();
+				}
 
-		};
+				if (!self.jogadaAtual.primeiraCarta) {
+					self.jogadaAtual.primeiraCarta = self.recuperaCarta(x, y);
 
-		vm.recuperaCarta = function (x, y) {
-			return vm.tabuleiro.recuperaCarta(x, y);
-		};
+					self.jogadaAtual.primeiraCarta.desvira();
 
-		vm.recuperaJogadaAtual = function () {
-			return vm.jogadaAtual;
-		};
+					self.jogadaAtual.iniciada = true;
 
-		vm.inicia();
+				} else if (!self.jogadaAtual.segundaCarta) {
+					self.jogadaAtual.segundaCarta = self.recuperaCarta(x, y);
+
+					self.jogadaAtual.segundaCarta.desvira();
+
+					self.jogadaAtual.iniciada = false;
+
+					if (self.jogadaAtual.segundaCarta.nome === self.jogadaAtual.primeiraCarta.nome) {
+						self.jogadaAtual.bemSucedida = true;
+						self.jogadaAtual.segundaCarta.apaga();
+						self.jogadaAtual.primeiraCarta.apaga();
+					} else {
+						self.jogadaAtual.bemSucedida = false;
+					}
+				}
+			};
+
+			self.recuperaCarta = function (x, y) {
+				return self.tabuleiro.recuperaCarta(x, y);
+			};
+
+			self.recuperaJogadaAtual = function () {
+				return self.jogadaAtual;
+			};
+
+			self.inicia();
+		}
 
 		function Jogada() {
 			var self = this;
@@ -114,60 +103,100 @@
 
 		}
 
-		function Carta(nome, imagem) {
+		function Carta(nome, url) {
 			var self = this;
 
 			self.urlVirada = '/app/assets/images/back.png';
 
+			self.url = url;
 			self.nome = nome;
-			self.imagem = imagem;
-			self.escondida = true;
+			self.imagem = '';
+			self.virada = true;
 			self.apagada = false;
-			self.row = null;
-			self.col = null;
-
-			self.setRow = function (row) {
-				self.row = row;
-			};
-
-			self.setCol = function (col) {
-				self.col = col;
-			};
+			self.linha = null;
+			self.coluna = null;
 
 			self.toString = function () {
 				return self.nome;
 			};
 
 			self.desvira = function () {
-				self.escondida = false;
-				self.urlVirada = self.imagem;
+				self.virada = false;
 			};
 
 			self.vira = function () {
-				self.escondida = true;
-				self.urlVirada = '/app/assets/images/back.png';
+				self.virada = true;
 			};
 
 			self.apaga = function () {
 				self.apagada = true;
-				self.urlVirada = null;
-			};
+			}
+
 		}
 
-		function Tabuleiro() {
+		function Tabuleiro(cartas, posicionadorDeCartas) {
 			var self = this;
 
 			self.qtdLinhas = 4;
 			self.qtdColunas = 4;
+			self.matriz = null;
 
-			self.matriz = [
-				[], [], [], []
-			];
+			self.posicionadorDeCartas = posicionadorDeCartas;
+
+			self.posicionaCartas = function () {
+				self.matriz = self.posicionadorDeCartas.sorteiaCartas(cartas, self.qtdLinhas, self.qtdColunas);
+			};
 
 			self.recuperaCarta = function (x, y) {
 				return self.matriz[x][y];
 			};
 		}
+
+		function PosicionadorDeCartas() {
+			var self = this;
+
+			self.sorteiaCartas = function (cartas, qtdLinhas, qtdColunas) {
+				var matriz = new Array();
+
+				for (var row = 0; row < qtdLinhas; row++) {
+					for (var col = 0; col < qtdColunas; col++) {
+						if (!(matriz[row] instanceof Array)) {
+							matriz[row] = new Array();
+						}
+
+						var random = Math.floor(Math.random() * cartas.length);
+						var carta = cartas[random];
+						carta.linha = row;
+						carta.coluna = col;
+						matriz[row].push(carta);
+						cartas.splice(random, 1)[0];
+					};
+				};
+
+				return matriz;
+			}
+		}
+
+		function criaCartas() {
+			return [
+				new Carta('ball', '/app/assets/images/8-ball.png'),
+				new Carta('ball', '/app/assets/images/8-ball.png'),
+				new Carta('potato', '/app/assets/images/baked-potato.png'),
+				new Carta('potato', '/app/assets/images/baked-potato.png'),
+				new Carta('dinosaur', '/app/assets/images/dinosaur.png'),
+				new Carta('dinosaur', '/app/assets/images/dinosaur.png'),
+				new Carta('kronos', '/app/assets/images/kronos.png'),
+				new Carta('kronos', '/app/assets/images/kronos.png'),
+				new Carta('rocket', '/app/assets/images/rocket.png'),
+				new Carta('rocket', '/app/assets/images/rocket.png'),
+				new Carta('unicorn', '/app/assets/images/skinny-unicorn.png'),
+				new Carta('unicorn', '/app/assets/images/skinny-unicorn.png'),
+				new Carta('guy', '/app/assets/images/that-guy.png'),
+				new Carta('guy', '/app/assets/images/that-guy.png'),
+				new Carta('zeppelin', '/app/assets/images/zeppelin.png'),
+				new Carta('zeppelin', '/app/assets/images/zeppelin.png')
+			];
+		};
 
 	}
 
